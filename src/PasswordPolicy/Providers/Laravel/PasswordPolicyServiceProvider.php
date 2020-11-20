@@ -20,6 +20,9 @@ class PasswordPolicyServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        $configPath = __DIR__ . '/../../../../config/password-policy.php';
+        $this->mergeConfigFrom($configPath, 'password-policy');
+
         $this->registerManager();
         $this->registerBuilder();
         $this->registerFacade();
@@ -33,6 +36,9 @@ class PasswordPolicyServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        $configPath = __DIR__ . '/../../../../config/password-policy.php';
+        $this->publishes([$configPath => $this->getConfigPath()], 'config');
+
         $this->configureValidationRule();
     }
 
@@ -63,7 +69,7 @@ class PasswordPolicyServiceProvider extends ServiceProvider
      */
     protected function configureValidationRule()
     {
-        $this->app['validator']->extend('password', PasswordValidator::class);
+        $this->app['validator']->extend($this->app['config']->get('password-policy.rule'), PasswordValidator::class . '@validate');
     }
 
     /**
@@ -103,5 +109,15 @@ class PasswordPolicyServiceProvider extends ServiceProvider
     protected function defaultPolicy(PolicyBuilder $builder)
     {
         return $builder->getPolicy();
+    }
+
+    /**
+     * Get the config path
+     *
+     * @return string
+     */
+    protected function getConfigPath()
+    {
+        return config_path('password-policy.php');
     }
 }
