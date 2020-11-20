@@ -1,9 +1,11 @@
 <?php namespace PasswordPolicy;
 
+use Closure;
 use PasswordPolicy\Rules\CaseRule;
 use PasswordPolicy\Rules\ContainRule;
 use PasswordPolicy\Rules\DigitRule;
 use PasswordPolicy\Rules\LengthRule;
+use PasswordPolicy\Rules\MinPassingRulesRule;
 use PasswordPolicy\Rules\SpecialCharacterRule;
 
 /**
@@ -63,6 +65,13 @@ class PolicyBuilder
         return $this;
     }
 
+    /**
+     * Add an upper case rule
+     *
+     * @param int $min min number of upper case characters
+     *
+     * @return $this
+     */
     public function upperCase($min = 1)
     {
         $this->policy->addRule(
@@ -72,6 +81,13 @@ class PolicyBuilder
         return $this;
     }
 
+    /**
+     * Add an lower case rule
+     *
+     * @param int $min min number of lower case characters
+     *
+     * @return $this
+     */
     public function lowerCase($min = 1)
     {
         $this->policy->addRule(
@@ -81,6 +97,13 @@ class PolicyBuilder
         return $this;
     }
 
+    /**
+     * Add a digit rule
+     *
+     * @param int $min min number of digits
+     *
+     * @return $this
+     */
     public function digits($min = 1)
     {
         $this->policy->addRule(
@@ -90,28 +113,67 @@ class PolicyBuilder
         return $this;
     }
 
-    public function doesNotContain($phrases)
+    /**
+     * Add a does not complain rule based on the given phrases
+     *
+     * @param      $phrases string|array
+     * @param      $caseSensitive bool
+     *
+     * @return $this
+     */
+    public function doesNotContain($phrases, $caseSensitive = true)
     {
         $phrases = is_array($phrases) ? $phrases : func_get_args();
 
         $this->policy->addRule(
-            (new ContainRule)->phrase($phrases)->doesnt()
+            (new ContainRule($caseSensitive))->phrase($phrases)->doesnt()
         );
 
         return $this;
     }
 
-    public function contains($phrases)
+    /**
+     * Add a contains rule based on the given phrases
+     *
+     * @param $phrases string|array
+     * @param $caseSensitive bool
+     *
+     * @return $this
+     */
+    public function contains($phrases, $caseSensitive = true)
     {
         $phrases = is_array($phrases) ? $phrases : func_get_args();
 
         $this->policy->addRule(
-            (new ContainRule)->phrase($phrases)
+            (new ContainRule($caseSensitive))->phrase($phrases)
         );
 
         return $this;
     }
 
+    /**
+     * Add a nested set of minimum passing rules
+     *
+     * @param         $passesRequired
+     * @param Closure $ruleSet
+     *
+     * @return $this
+     */
+    public function minPassingRules($passesRequired, Closure $ruleSet)
+    {
+        $this->policy->addRule(
+            (new MinPassingRulesRule($passesRequired))->using($ruleSet)
+        );
+
+        return $this;
+    }
+
+    /**
+     * Special characters
+     *
+     * @param int $min
+     * @return $this
+     */
     public function specialCharacters($min = 1)
     {
         $this->policy->addRule(
@@ -121,6 +183,12 @@ class PolicyBuilder
         return $this;
     }
 
+
+    /**
+     * Get the policy instance
+     *
+     * @return Policy
+     */
     public function getPolicy()
     {
         return $this->policy;
