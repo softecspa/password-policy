@@ -15,6 +15,13 @@ A fluent password policy builder library. The package can be used stand-alone or
 $ composer require joshralph/password-policy
 ```
 
+## Configure
+```
+$ php artisan vendor:publish --provider="PasswordPolicy\Providers\Laravel\PasswordPolicyServiceProvider"
+```
+
+Change the `rule` name in `config\password-policy.php` from password (already taken from Laravel Validator framework), to something else (e.g. `password_policy`).
+
 ## Usage
 
 ### Policy Builder
@@ -127,7 +134,8 @@ You can define as many policies as you require, however it's recommended to stic
 
 #### Setup Validation
 
-Once you're policies have been defined, you're ready to start using the policies. A new 'password' validation rule is now available to use.
+Once you're policies have been defined, you're ready to start using the policies. A new 'password_policy' validation rule is now available to use.
+Instead `password_policy` use the one you have configured in `config\password-policy.php` `rule`.
 
 ```php
 // Request class
@@ -141,7 +149,7 @@ public function rules()
 {
     return [
         // ...
-        'password' => 'required|password'
+        'password' => 'required|password_policy'
     ];
 }
 
@@ -150,6 +158,6 @@ public function rules()
 The validator will use the 'default' policy by default. To use an alternative policy, add an additional parameter:
 ```php
 
-'password' => 'required|password:admin'
+'password' => 'required|password_policy:admin'
 
 ```
